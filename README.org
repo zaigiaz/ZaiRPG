@@ -14,3 +14,9 @@ Inspired by D&D and older fantasy titles.
 - Main Game Loop or basic test battle for now
 - work on game mechanics
 - ASCII viewer with turn-based combat, Z-levels, cover, etc.
+
+** Resources
+
+- https://github.com/LuanFabricio/isometric-raylib/blob/main/main.c
+
+

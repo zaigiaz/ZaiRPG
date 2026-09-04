@@ -1,2 +1,4 @@
+FLAGS = -Wall -Wextra -O2
+
 target:
-	cc main.c -o main && ./main
+	cc main.c $(FLAGS) -o main && ./main

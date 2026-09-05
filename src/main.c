@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h>
 #include "raylib.h"
 
 #define ARENA_IMPLEMENTATION
 #include "arena.h"
+#include "declares.h"
 
-#define TEST_GAME 1
+#define TEST_GAME 0
 #define MAX_MOVES 5
 #define MAX_TYPE_COUNT 5
 
@@ -37,7 +39,6 @@ const float type_interaction_table[6][6] = {
   [MOVE_BLACK]    = {1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 0.0f}
 };
 
-// change move_type enum to char pointer
 char* mv_type_to_string(move_type type) {
   char *mv_name = "";
   switch(type) {
@@ -52,32 +53,31 @@ char* mv_type_to_string(move_type type) {
   return mv_name;
 }
 
-// for defining moves
 typedef struct {
   char *name;
-  int damage;
+  u64 damage;
   move_type type;
 } Move;
 
-// stats for all entities in the game
 typedef struct {
-  int HP;
-  int AP;
-  int MP;
-  int Strength;
-  int Intelligence;
-  int Endurance;  
+  u32 level;
+  i32 speed;
+  i32 HP;
+  i32 AP;
+  i32 MP;
+  
+  u32 Strength;
+  u32 Intelligence;
+  u32 Endurance;
 } stats;
 
-// character sheet for a player or entity
 typedef struct {
   char *name;  
   move_type player_type;
   stats charstats;
   Move moves[MAX_MOVES];
-  size_t current_moves;
+  u8 current_moves;
 } player;
-
 
 // print the player information
 void prt_char_info(player* sheet) {
@@ -89,10 +89,10 @@ void prt_char_info(player* sheet) {
   printf("AP:%d\n", sheet->charstats.AP);
   printf("Strength:%-7d ", sheet->charstats.Strength);
   printf("Intelligence:%-7d ", sheet->charstats.Intelligence);
-  printf("Wisdom:%-7d\n", sheet->charstats.Endurance);
+  printf("Endurance:%-7d\n", sheet->charstats.Endurance);
 
   for(size_t i=0; i < sheet->current_moves; i++) {
-    printf("Move: %-10s Move_Type: %-10s dmg: %d\n", sheet->moves[i].name, 
+    printf("Move: %-10s Move_Type: %-10s dmg: %lu\n", sheet->moves[i].name, 
 	   mv_type_to_string(sheet->moves[i].type), sheet->moves[i].damage);
   }
   printf("==============================\n");
@@ -101,28 +101,46 @@ void prt_char_info(player* sheet) {
 // generate random character
 void proc_char(player* sheet, char* ent_name) {
   // TODO :: figure out a way to add moves without having to figure out count, etc. (store in file)
-  // TODO :: make it procgen for generating a character
   sheet->name = ent_name;  
   sheet->player_type = MOVE_PHYSICAL;
-  int rand[6];
+  u8 rand[6];
 
-  for(size_t i=0; i<6; i++) {
+  for(u32 i=0; i<6; i++) {
     rand[i] = GetRandomValue(1, 50);
   }
-
   sheet->charstats = (stats) { .HP=rand[0],       .AP=rand[1],           .MP=rand[2],
 			       .Strength=rand[3], .Intelligence=rand[4], .Endurance=rand[5], };
-  sheet->moves[0] =  (Move)  { .name="Tackle", .damage=10 };
-  sheet->moves[1] =  (Move)  { .name="Scratch", .damage=20 };
+
+  // TODO :: function to read json and store moves and the data there
+  // and automatically count moves
+  sheet->moves[0] =  (Move)  { .name="Tackle",  .damage=10, .type=MOVE_FLAME };
+  sheet->moves[1] =  (Move)  { .name="Scratch", .damage=20, .type=MOVE_FLAME };
+
   sheet->current_moves = 2;
 }
 
+// choose attack (random for now)
+u8 choose_attack(u8 current_moves) {
+  u8 att_move = GetRandomValue(0, current_moves-1);
+  return att_move;
+}
+
 // function to get two entities to interact through move system
-void attack(player* ent, Move attack) {
-  float modifier = type_interaction_table[ent->player_type][attack.type];
-  int damage = (attack.damage * modifier);
+void attack(player* ent, player* enem) {
+  u8 index = choose_attack(enem->current_moves);
+  Move Chosen = enem->moves[index];
+  float modifier = type_interaction_table[ent->player_type][Chosen.type];
+  u32 damage = (Chosen.damage * modifier);
   ent->charstats.HP -= damage;
-  printf("%s was attacked by %s for %d damage\n", ent->name, attack.name, damage);
+  printf("%s was attacked by %s for %d damage\n", ent->name, Chosen.name, damage);
+}
+
+// Calculate turn action and who can go first
+bool calc_turn_action(player* ent, player* opp) {
+  if(ent->charstats.Endurance > opp->charstats.Endurance) {
+    return true;
+  }
+  return false;
 }
 
 void test_game() {
@@ -132,20 +150,25 @@ void test_game() {
 
   proc_char(protag, "protag");
   proc_char(enem, "enem");
+
   prt_char_info(protag);
   prt_char_info(enem);
-  
-  attack(protag, (Move){"ember", 10, MOVE_FLAME});
+
+  u8 turn_action = calc_turn_action(protag,enem);
+  printf("turn_action: %d\n", turn_action);
+
+  attack(protag, enem);
 
   free(protag);
   free(enem);
 }
 
-// main
 // TODO :: make main game loop of single battle with data I currently have
+// TODO :: what happens when protag dies, code in turn-based thing, flesh-out move-array and move generation and choice
 int main() {
 
   SetRandomSeed((unsigned int)time(NULL));
+  Arena game_arena = {0};
 
   printf("entering game\n");
 
@@ -154,28 +177,31 @@ int main() {
     exit(0);
   }
 
-  Arena game_arena = {0};
-
   player *protag, *enem;
   protag = arena_alloc(&game_arena, sizeof(player));
   enem = arena_alloc(&game_arena, sizeof(player));
-
-  proc_char(protag, "protag");
+  proc_char(protag, "protag");    
   proc_char(enem, "enem");
-
+  
   GAME_STATE state = RUNNING;
   while(state == RUNNING) { 
-  
-  attack(protag, (Move){"Ember", 5, MOVE_FLAME});
+
+  attack(protag, enem);
 
   if(protag->charstats.HP <= 0) {
     state = LOSE;
-    printf("player has died!\n");
+    printf("player has DIED!\n");
+    break;
+  }
+
+  if(enem->charstats.HP <= 0) {
+    state = WIN;
+    printf("player has WON!\n");
+    break;
   }
  }
 
   arena_free(&game_arena);
-
   printf("exiting game\n");
   return 0;
 }

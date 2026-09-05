@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <raylib.h>
+#include <time.h>
+#include "raylib.h"
 
 #define MAX_MOVES 5
+#define MAX_TYPE_COUNT 5
 
 typedef enum {
   MOVE_PHYSICAL,
@@ -13,10 +15,16 @@ typedef enum {
   MOVE_BLACK
 } move_type;
 
-// find out strengths vs weaknesses for move types and character types
-void mv_type_effectors(move_type type) {
-  return;
-}
+
+// first element is elem being affected by second element
+const float type_interaction_table[6][6] = {
+    [MOVE_PHYSICAL] = {0.0f, 2.0f, 1.5f, 1.0f, 1.5f, 1.0f},
+    [MOVE_FLAME]    = {3.0f, 0.0f, 2.0f, 1.5f, 1.1f, 1.0f},
+    [MOVE_STORM]    = {1.0f, 1.0f, 0.0f, 1.0f, 1.4f, 1.5f},
+    [MOVE_EARTH]    = {1.0f, 1.8f, 1.0f, 0.0f, 1.2f, 1.0f},
+    [MOVE_WHITE]    = {2.0f, 1.0f, 2.0f, 1.0f, 0.0f, 1.5f},
+    [MOVE_BLACK]    = {1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 0.0f}
+};
 
 // change move_type enum to char pointer
 char* mv_type_to_string(move_type type) {
@@ -26,6 +34,8 @@ char* mv_type_to_string(move_type type) {
   case MOVE_FLAME: mv_name = "Flame"; break;
   case MOVE_STORM: mv_name = "Storm"; break;
   case MOVE_WHITE: mv_name = "White"; break;
+  case MOVE_BLACK: mv_name = "Black"; break;
+  case MOVE_EARTH: mv_name = "Earth"; break;
   default: fprintf(stderr, "move doesn't exist"); exit(1);
   }
   return mv_name;
@@ -39,12 +49,10 @@ typedef struct {
 } Move;
 
 // stats for all entities in the game
-// TODO :: add Strength, Intelligence, etc
 typedef struct {
   int HP;
   int AP;
   int MP;
-
   int Strength;
   int Intelligence;
   int Endurance;
@@ -54,16 +62,19 @@ typedef struct {
 
 // character sheet for a player or entity
 typedef struct {
-  char *name;
+  char *name;  
+  move_type player_type;
   stats charstats;
   Move moves[MAX_MOVES];
   size_t current_moves;
 } player;
 
+
 // print the player information
 void prt_char_info(player* sheet) {
   printf("==============================\n");
   printf("entity name is: '%s'\n", sheet->name);
+  printf("Player Type: %s\n", mv_type_to_string(sheet->player_type));
   printf("HP:%d ", sheet->charstats.HP);
   printf("MP:%d ", sheet->charstats.MP);
   printf("AP:%d\n", sheet->charstats.AP);
@@ -80,10 +91,14 @@ void prt_char_info(player* sheet) {
 
 // generate random character
 void proc_char(player* sheet, char* ent_name) {
-  // TODO :: figure out a way to add moves without having to figure out count, etc.
-  // TODO :: procedurally generate values
+  // TODO :: figure out a way to add moves without having to figure out count, etc. (store in file)
+  // TODO :: make it procgen for generating a character
   sheet->name = ent_name;
-  sheet->charstats = (stats) { .HP=40, .AP=40, .MP=40,
+  
+  /* int random = GetRandomValue(5, 15); */
+  /* printf("%d", random); */
+  
+  sheet->charstats = (stats) { .HP=40,       .AP=40,           .MP=40,
 			       .Strength=10, .Intelligence=10, .Endurance=10, };
   sheet->moves[0] =  (Move)  { .name="Tackle", .damage=10 };
   sheet->moves[1] =  (Move)  { .name="Scratch", .damage=20 };
@@ -92,13 +107,16 @@ void proc_char(player* sheet, char* ent_name) {
 
 // function to get two entities to interact through move system
 void attack(player* ent, Move attack) {
-  ent->charstats.HP -= attack.damage;  
+  float modifier = type_interaction_table[ent->player_type][attack.type];
+  ent->charstats.HP -= (attack.damage * modifier);
 }
 
 // main
+// TODO :: make main game loop of single battle with data I currently have
 int main() {
 
   printf("entering game\n");
+  SetRandomSeed((unsigned int)time(NULL));
   
   player *protag, *enem;
   protag = malloc(sizeof(player));
@@ -107,7 +125,7 @@ int main() {
   proc_char(protag, "protag");
   proc_char(enem, "enem");
   
-  attack(protag, (Move){"hi", 20, MOVE_PHYSICAL});
+  attack(protag, (Move){"hi", 10, MOVE_FLAME});
 
   prt_char_info(protag);
   prt_char_info(enem);

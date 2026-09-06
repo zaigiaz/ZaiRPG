@@ -6,9 +6,10 @@
 
 #define ARENA_IMPLEMENTATION
 #include "arena.h"
+#include "data.h"
 #include "declares.h"
 
-#define TEST_GAME 0
+#define TEST_GAME 1
 #define MAX_MOVES 5
 #define MAX_TYPE_COUNT 5
 

@@ -1,0 +1,7 @@
+Longer TODOS around other game mechanics
+
+- have (mmap -> jsonl) system for reading data
+- Have Tile Maps be loadable through jsonl files
+- Classes and Sub-classes, with different Types for character also affecting the stats
+- Isometric Camera and Rendering with Raylib
+- Art and Sound (Figure out Way down the Road)

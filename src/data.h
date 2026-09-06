@@ -3,6 +3,7 @@
 
 // defines for different data that we can parse with our JSON system
 #define MAX_UNIT_SIZE 8
+#include "declares.h"
 
 // Class and Subclass Data
 typedef struct {
@@ -14,6 +15,11 @@ typedef struct {
   char* name;
   int player_unit[MAX_UNIT_SIZE];
 } JSON_Unit;
+
+// read files and spit out contents as a string
+// have this done as mmap in the future
+u8 *slurp(char* name);
+
 
 
 #endif 

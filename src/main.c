@@ -9,7 +9,7 @@
 #include "data.h"
 #include "declares.h"
 
-#define TEST_GAME 1
+#define TEST_GAME 0
 #define MAX_MOVES 5
 #define MAX_TYPE_COUNT 5
 
@@ -106,7 +106,7 @@ void proc_char(player* sheet, char* ent_name) {
   sheet->player_type = MOVE_PHYSICAL;
   u8 rand[6];
 
-  for(u32 i=0; i<6; i++) {
+  for(u32 i=0; i<countof(rand); i++) {
     rand[i] = GetRandomValue(1, 50);
   }
   sheet->charstats = (stats) { .HP=rand[0],       .AP=rand[1],           .MP=rand[2],
@@ -156,9 +156,10 @@ void test_game() {
   prt_char_info(enem);
 
   u8 turn_action = calc_turn_action(protag,enem);
-  printf("turn_action: %d\n", turn_action);
 
-  attack(protag, enem);
+  if(!turn_action) {
+    attack(protag, enem);    
+  }
 
   free(protag);
   free(enem);
@@ -187,7 +188,12 @@ int main() {
   GAME_STATE state = RUNNING;
   while(state == RUNNING) { 
 
-  attack(protag, enem);
+  u8 turn_action = calc_turn_action(protag,enem);
+  if(!turn_action) {
+    attack(protag, enem);    
+  } else {
+    attack(enem, protag);
+  }
 
   if(protag->charstats.HP <= 0) {
     state = LOSE;

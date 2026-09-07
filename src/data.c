@@ -3,7 +3,17 @@
 #include "json.h"
 #include "declares.h"
 
+// TODO :: create Object ID system for game
+
+typedef enum {
+  ENTITY,
+  MAP,
+  OBJECT,
+  CLASS
+} data_type;
+
 // slurp up file contents
+// TODO :: change this to s8 so I can retain length of buffer when I pass back?
 u8* slurp(char *name) 
 {
   FILE *fp;
@@ -22,7 +32,9 @@ u8* slurp(char *name)
   return buffer;
 }
 
-
-void data_entry() {
-  printf("hello");
+// slurp up the json file and read it and parse to specific part
+// TODO :: get basic json format for parsing save characters / entities
+void read_json_file(const char* json) {
+  struct json_value_s* root = json_parse(json, strlen(json));
+  return;
 }

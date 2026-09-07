@@ -39,7 +39,7 @@ typedef enum {
 } class_type;
 
 // first element is elem being affected by second element
-const float type_interaction_table[6][6] = {
+const f32 type_interaction_table[6][6] = {
   [MOVE_PHYSICAL] = {0.0f, 2.0f, 1.5f, 1.0f, 1.5f, 1.0f},
   [MOVE_FLAME]    = {3.0f, 0.0f, 2.0f, 1.5f, 1.1f, 1.0f},
   [MOVE_STORM]    = {1.0f, 1.0f, 0.0f, 1.0f, 1.4f, 1.5f},
@@ -48,7 +48,7 @@ const float type_interaction_table[6][6] = {
   [MOVE_BLACK]    = {1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 0.0f}
 };
 
-char* mv_type_to_string(move_type type) {
+const char* mv_type_to_string(move_type type) {
   char *mv_name = "";
   switch(type) {
   case MOVE_PHYSICAL: mv_name = "Physical"; break;
@@ -64,8 +64,11 @@ char* mv_type_to_string(move_type type) {
 
 typedef struct {
   char *name;
-  u64 damage;
   move_type type;
+  union {
+    f64 effect; // healing, status debuff, etc.
+    u64 damage;
+  };
 } Move;
 
 typedef struct {
@@ -87,7 +90,7 @@ typedef struct {
 } player;
 
 // print the player information
-void prt_char_info(player* sheet) {
+void prt_char_info(const player* sheet) {
   printf("==============================\n");
   printf("entity name is: '%s'\n", sheet->name);
   printf("Player Type: %s\n", mv_type_to_string(sheet->player_type));
@@ -133,22 +136,22 @@ u8 choose_attack(u8 current_moves) {
 }
 
 // function to get two entities to interact through move system
-void attack(player* ent, player* enem) {
+void attack(player* ent, const player* enem) {
   u8 index = choose_attack(enem->current_moves);
   Move Chosen = enem->moves[index];
-  float modifier = type_interaction_table[ent->player_type][Chosen.type];
+  f32 modifier = type_interaction_table[ent->player_type][Chosen.type];
   u32 damage = (Chosen.damage * modifier);
   ent->charstats.HP -= damage;
   printf("%s was attacked by %s for %d damage\n", ent->name, Chosen.name, damage);
 }
 
 // calculate the player speed
-i32 calc_speed(player* ent) {
+i32 calc_speed(const player* ent) {
   return (i32) (ent->charstats.Endurance * 2.5);
 }
 
 // Calculate turn action and who can go first
-bool calc_turn_action(player* ent, player* opp) {
+bool calc_turn_action(const player* ent, const player* opp) {
   if(calc_speed(ent) > calc_speed(opp)) {
     return true;
   }

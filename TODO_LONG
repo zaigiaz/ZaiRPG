@@ -4,5 +4,7 @@ Longer TODOS around other game mechanics
 - Logger for State and debugging
 - Have Tile Maps be loadable through jsonl files
 - Classes and Sub-classes, with different Types for character also affecting the stats
+- some type of Priority-Queue Data Structure (although might be specific)
 - Isometric Camera and Rendering with Raylib :: https://github.com/fecty/Isometric-Tiles/tree/main
+- Have Combat Event-Loop System with bitset for representing different scenarios (encoding control flow)
 - Art and Sound (Figure out Way down the Road)

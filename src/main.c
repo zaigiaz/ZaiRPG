@@ -29,6 +29,14 @@ typedef enum {
   MOVE_BLACK
 } move_type;
 
+// enum to specify type of class (for tagged union on class)
+typedef enum {
+  KNIGHT,
+  ARCHER,
+  MAGE,
+  HEALER,
+  ROGUE
+} class_type;
 
 // first element is elem being affected by second element
 const float type_interaction_table[6][6] = {
@@ -61,8 +69,6 @@ typedef struct {
 } Move;
 
 typedef struct {
-  u32 level;
-  i32 speed;
   i32 HP;
   i32 AP;
   i32 MP;
@@ -114,8 +120,8 @@ void proc_char(player* sheet, char* ent_name) {
 
   // TODO :: function to read json and store moves and the data there
   // and automatically count moves
-  sheet->moves[0] =  (Move)  { .name="Tackle",  .damage=10, .type=MOVE_FLAME };
-  sheet->moves[1] =  (Move)  { .name="Scratch", .damage=20, .type=MOVE_FLAME };
+  sheet->moves[0] =  (Move)  { .name="Tackle",  .damage=2, .type=MOVE_FLAME };
+  sheet->moves[1] =  (Move)  { .name="Scratch", .damage=5, .type=MOVE_BLACK };
 
   sheet->current_moves = 2;
 }
@@ -136,12 +142,30 @@ void attack(player* ent, player* enem) {
   printf("%s was attacked by %s for %d damage\n", ent->name, Chosen.name, damage);
 }
 
+// calculate the player speed
+i32 calc_speed(player* ent) {
+  return (i32) (ent->charstats.Endurance * 2.5);
+}
+
 // Calculate turn action and who can go first
 bool calc_turn_action(player* ent, player* opp) {
-  if(ent->charstats.Endurance > opp->charstats.Endurance) {
+  if(calc_speed(ent) > calc_speed(opp)) {
     return true;
   }
   return false;
+}
+
+void test_window() {
+  InitWindow(1200, 1200, "ZaiRPG");
+  SetTargetFPS(60);
+  while (!WindowShouldClose())    // Detect window close button or ESC key
+    {
+      BeginDrawing();
+      ClearBackground(RAYWHITE);
+      DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+      EndDrawing();
+    }
+  CloseWindow();
 }
 
 void test_game() {
@@ -160,6 +184,8 @@ void test_game() {
   if(!turn_action) {
     attack(protag, enem);    
   }
+
+  test_window();
 
   free(protag);
   free(enem);
@@ -188,25 +214,25 @@ int main() {
   GAME_STATE state = RUNNING;
   while(state == RUNNING) { 
 
-  u8 turn_action = calc_turn_action(protag,enem);
-  if(!turn_action) {
-    attack(protag, enem);    
-  } else {
-    attack(enem, protag);
-  }
+    u8 turn_action = calc_turn_action(protag,enem);
+    if(!turn_action) {
+      attack(protag, enem);    
+    } else {
+      attack(enem, protag);
+    }
 
-  if(protag->charstats.HP <= 0) {
-    state = LOSE;
-    printf("player has DIED!\n");
-    break;
-  }
+    if(protag->charstats.HP <= 0) {
+      state = LOSE;
+      printf("player has DIED!\n");
+      break;
+    }
 
-  if(enem->charstats.HP <= 0) {
-    state = WIN;
-    printf("player has WON!\n");
-    break;
+    if(enem->charstats.HP <= 0) {
+      state = WIN;
+      printf("player has WON!\n");
+      break;
+    }
   }
- }
 
   arena_free(&game_arena);
   printf("exiting game\n");

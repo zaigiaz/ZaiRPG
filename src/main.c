@@ -112,9 +112,9 @@ void proc_char(player* sheet, char* ent_name) {
   // TODO :: figure out a way to add moves without having to figure out count, etc. (store in file)
   sheet->name = ent_name;  
   sheet->player_type = MOVE_PHYSICAL;
-  u8 rand[6];
+  u32 rand[6];
 
-  for(u32 i=0; i<countof(rand); i++) {
+  for(u8 i=0; i<countof(rand); i++) {
     rand[i] = GetRandomValue(1, 50);
   }
   sheet->charstats = (stats) { .HP=rand[0],       .AP=rand[1],           .MP=rand[2],
@@ -147,6 +147,13 @@ void attack(player* ent, const player* enem) {
 // calculate the player speed
 i32 calc_speed(const player* ent) {
   return (i32) (ent->charstats.Endurance * 2.5);
+}
+
+// numerical representation of total char power
+i32 calc_power(const player* ent) {
+  i32 base = (ent->charstats.HP + ent-> charstats.MP + ent->charstats.AP);
+  f32 modifiers = (ent->charstats.Strength + ent->charstats.Intelligence + ent->charstats.Endurance);
+  return (i32) (base * modifiers);
 }
 
 // Calculate turn action and who can go first

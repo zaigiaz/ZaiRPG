@@ -1,0 +1,163 @@
+* Main API
+
+- link to repo :: https://github.com/sheredom/json.h
+
+#+BEGIN_SRC C
+struct json_value_s json_parse(
+  const void *src
+)
+
+struct json_value_s {
+void * payload;
+size_t type;
+}
+#+END_SRC
+
+* extended parse
+
+There is also an extended parsing with bitset of flags and error handling
+
+#+BEGIN_SRC C
+struct json_value_s *json_parse_ex(
+    const void *src,
+    size_t src_size,
+    size_t flags_bitset,
+    void*(*alloc_func_ptr)(void *, size_t),
+    void *user_data,
+    struct json_parse_result_s *result);
+#+END_SRC
+
+* helpful functions
+
+#+BEGIN_SRC C
+json_value_as_number(struct json_value_s *const value)
+json_value_as_string(struct json_value_s *const value)
+json_value_as_array(struct json_value_s *const value)
+json_extract_get_array_size(const struct json_array_s *const array)
+#+END_SRC
+
+* types
+
+#+BEGIN_SRC C
+typedef enum {
+json_type_string, 
+json_type_number, 
+json_type_object, 
+json_type_array,
+json_type_true,
+json_type_false,
+json_type_null
+} types;
+#+END_SRC
+
+
+* Example Json_Parse
+
+#+BEGIN_SRC C
+const char json[] = "{\"a\" : true, \"b\" : [false, null, \"foo\"]}";
+struct json_value_s* root = json_parse(json, strlen(json));
+assert(root->type == json_type_object);
+
+struct json_object_s* object = (struct json_object_s*)root->payload;
+assert(object->length == 2);
+
+struct json_object_element_s* a = object->start;
+
+struct json_string_s* a_name = a->name;
+assert(0 == strcmp(a_name->string, "a"));
+assert(a_name->string_size == strlen("a"));
+
+struct json_value_s* a_value = a->value;
+assert(a_value->type == json_type_true);
+assert(a_value->payload == NULL);
+
+struct json_object_element_s* b = a->next;
+assert(b->next == NULL);
+
+struct json_string_s* b_name = b->name;
+assert(0 == strcmp(b_name->string, "b"));
+assert(b_name->string_size == strlen("b"));
+
+struct json_value_s* b_value = b->value;
+assert(b_value->type == json_type_array);
+
+struct json_array_s* array = (struct json_array_s*)b_value->payload;
+assert(array->length == 3);
+
+struct json_array_element_s* b_1st = array->start;
+
+struct json_value_s* b_1st_value = b_1st->value;
+assert(b_1st_value->type == json_type_false);
+assert(b_1st_value->payload == NULL);
+
+struct json_array_element_s* b_2nd = b_1st->next;
+
+struct json_value_s* b_2nd_value = b_2nd->value;
+assert(b_2nd_value->type == json_type_null);
+assert(b_2nd_value->payload == NULL);
+
+struct json_array_element_s* b_3rd = b_2nd->next;
+assert(b_3rd->next == NULL);
+
+struct json_value_s* b_3rd_value = b_3rd->value;
+assert(b_3rd_value->type == json_type_string);
+
+struct json_string_s* string = (struct json_string_s*)b_3rd_value->payload;
+assert(0 == strcmp(string->string, "foo"));
+assert(string->string_size == strlen("foo"));
+
+/* Don't forget to free the one allocation! */
+free(root);
+#+END_SRC
+
+
+* Parsing with extended struct
+
+#+BEGIN_SRC C
+const char json[] = "{\"a\" : true, \"b\" : [false, null, \"foo\"]}";
+struct json_value_s* root = json_parse(json, strlen(json));
+
+struct json_object_s* object = json_value_as_object(root);
+assert(object != NULL);
+assert(object->length == 2);
+
+struct json_object_element_s* a = object->start;
+
+struct json_string_s* a_name = a->name;
+assert(0 == strcmp(a_name->string, "a"));
+assert(a_name->string_size == strlen("a"));
+
+struct json_value_s* a_value = a->value;
+assert(json_value_is_true(a_value));
+
+struct json_object_element_s* b = a->next;
+assert(b->next == NULL);
+
+struct json_string_s* b_name = b->name;
+assert(0 == strcmp(b_name->string, "b"));
+assert(b_name->string_size == strlen("b"));
+
+struct json_array_s* array = json_value_as_array(b->value);
+assert(array->length == 3);
+
+struct json_array_element_s* b_1st = array->start;
+
+struct json_value_s* b_1st_value = b_1st->value;
+assert(json_value_is_false(b_1st_value));
+
+struct json_array_element_s* b_2nd = b_1st->next;
+
+struct json_value_s* b_2nd_value = b_2nd->value;
+assert(json_value_is_null(b_2nd_value));
+
+struct json_array_element_s* b_3rd = b_2nd->next;
+assert(b_3rd->next == NULL);
+
+struct json_string_s* string = json_value_as_string(b_3rd->value);
+assert(string != NULL);
+assert(0 == strcmp(string->string, "foo"));
+assert(string->string_size == strlen("foo"));
+
+/* Don't forget to free the one allocation! */
+free(root);
+#+END_SRC

@@ -39,27 +39,5 @@ s8* slurp(const char *name)
 void parse_json_file(const s8* json) {
   struct json_value_s* root = json_parse(json->data, json->len);
 
-/*
- helpful functions :: 						 
-   json_value_as_number(struct json_value_s *const value)
-   json_value_as_string(struct json_value_s *const value)
-   json_value_as_array(struct json_value_s *const value)
-   json_extract_get_array_size(const struct json_array_s *const array)
-*/ 								
-
-/* helpful types ::	 
-   json_type_string, 
-   json_type_number, 
-   json_type_object, 
-   json_type_array,
-   json_type_true,
-   json_type_false,
-   json_type_null
-*/
-
-
-
-
-  
   return;
 }

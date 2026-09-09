@@ -9,18 +9,18 @@
 #include "data.h"
 #include "declares.h"
 
-#define TEST_GAME 0
+#define TEST_GAME 1
 #define MAX_MOVES 5
 #define MAX_TYPE_COUNT 5
 
-typedef enum {
+typedef enum : u8 {
   WIN,
   RUNNING,
   LOSE,
   ERROR
 } GAME_STATE;
 
-typedef enum {
+typedef enum : u8 {
   MOVE_PHYSICAL,
   MOVE_FLAME,
   MOVE_STORM,
@@ -30,7 +30,7 @@ typedef enum {
 } move_type;
 
 // enum to specify type of class (for tagged union on class)
-typedef enum {
+typedef enum : u8 {
   KNIGHT,
   ARCHER,
   MAGE,
@@ -100,7 +100,6 @@ void prt_char_info(const player* sheet) {
   printf("Strength:%-7d ", sheet->charstats.Strength);
   printf("Intelligence:%-7d ", sheet->charstats.Intelligence);
   printf("Endurance:%-7d\n", sheet->charstats.Endurance);
-
   for(size_t i=0; i < sheet->current_moves; i++) {
     printf("Move: %-10s Move_Type: %-10s dmg: %lu\n", sheet->moves[i].name, 
 	   mv_type_to_string(sheet->moves[i].type), sheet->moves[i].damage);
@@ -188,7 +187,9 @@ void test_game() {
     attack(protag, enem);    
   }
 
-  test_window();
+  /* s8* st = slurp("../TODO_LONG"); */
+  /* printf("\n%s\n", st->data); */
+  /* test_window(); */
 
   free(protag);
   free(enem);

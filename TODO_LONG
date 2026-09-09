@@ -1,10 +1,16 @@
 Longer TODOS around other game mechanics
 
-- have (mmap -> jsonl) system for reading data
+- have (json -> custom format) system for reading data
 - Logger for State and debugging
-- Have Tile Maps be loadable through jsonl files
+- Have Tile Maps be loadable through json files (then converted to my own format)
 - Classes and Sub-classes, with different Types for character also affecting the stats
 - some type of Priority-Queue Data Structure (although might be specific)
 - Isometric Camera and Rendering with Raylib :: https://github.com/fecty/Isometric-Tiles/tree/main
+- use bitmasking and ID system to shorten amount of data in use, use bitmasks to do efficient switching
 - Have Combat Event-Loop System with bitset for representing different scenarios (encoding control flow)
 - Art and Sound (Figure out Way down the Road)
+
+* Resources
+
+- https://www.geeksforgeeks.org/c/sort-array-of-structs-with-qsort-in-c/ (for pq like stuff)
+- https://github.com/VuThach3001/C_Advance_Programming/blob/main/learning/section-8_bit_manipulation/54_bitmasks.md

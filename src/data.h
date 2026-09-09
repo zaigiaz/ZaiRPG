@@ -18,8 +18,7 @@ typedef struct {
 
 // read files and spit out contents as a string
 // have this done as mmap in the future
-u8 *slurp(char* name);
-
-
+s8 *slurp(const char* name);
+void parse_json_file(const s8* json);
 
 #endif 

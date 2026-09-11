@@ -13,12 +13,9 @@
 #define MAX_MOVES 5
 #define MAX_TYPE_COUNT 5
 
-typedef enum : u8 {
-  WIN,
-  RUNNING,
-  LOSE,
-  ERROR
-} GAME_STATE;
+// TODO :: Make basic inventory system
+
+typedef enum : u8 { WIN, RUNNING, LOSE, ERROR } GAME_STATE;
 
 typedef enum : u8 {
   MOVE_PHYSICAL,
@@ -33,9 +30,7 @@ typedef enum : u8 {
 typedef enum : u8 {
   KNIGHT,
   ARCHER,
-  MAGE,
-  HEALER,
-  ROGUE
+  MAGE
 } class_type;
 
 // first element is elem being affected by second element
@@ -65,10 +60,10 @@ const char* mv_type_to_string(move_type type) {
 typedef struct {
   char *name;
   move_type type;
-  union {
-    f64 effect; // healing, status debuff, etc.
-    u64 damage;
-  };
+  u64 damage;
+  u8 range;
+  u16 * effects_target; // list of things effected by ID
+  // add effect type
 } Move;
 
 typedef struct {
@@ -82,7 +77,7 @@ typedef struct {
 } stats;
 
 typedef struct {
-  char *name;  
+  const char *name;  
   move_type player_type;
   stats charstats;
   Move moves[MAX_MOVES];
@@ -108,10 +103,9 @@ void prt_char_info(const player* sheet) {
 }
 
 // generate random character
-void proc_char(player* sheet, char* ent_name) {
-  // TODO :: figure out a way to add moves without having to figure out count, etc. (store in file)
+void proc_rand_char(player* sheet, char* ent_name) {
   sheet->name = ent_name;  
-  sheet->player_type = MOVE_PHYSICAL;
+  sheet->player_type = GetRandomValue(0, MAX_TYPE_COUNT);
   u32 rand[6];
 
   for(u8 i=0; i<countof(rand); i++) {
@@ -120,17 +114,15 @@ void proc_char(player* sheet, char* ent_name) {
   sheet->charstats = (stats) { .HP=rand[0],       .AP=rand[1],           .MP=rand[2],
 			       .Strength=rand[3], .Intelligence=rand[4], .Endurance=rand[5], };
 
-  // TODO :: function to read json and store moves and the data there
-  // and automatically count moves
+  // TODO :: integrate with JSON system to pick random moves according to ent type
   sheet->moves[0] =  (Move)  { .name="Tackle",  .damage=2, .type=MOVE_FLAME };
   sheet->moves[1] =  (Move)  { .name="Scratch", .damage=5, .type=MOVE_BLACK };
-
   sheet->current_moves = 2;
 }
 
 // choose attack (random for now)
 u8 choose_attack(u8 current_moves) {
-  u8 att_move = GetRandomValue(0, current_moves-1);
+  u8 att_move = GetRandomValue(1, current_moves-1);
   return att_move;
 }
 
@@ -182,8 +174,8 @@ void test_game() {
   protag = malloc(sizeof(player));
   enem = malloc(sizeof(player));
 
-  proc_char(protag, "protag");
-  proc_char(enem, "enem");
+  proc_rand_char(protag, "protag");
+  proc_rand_char(enem, "enem");
 
   prt_char_info(protag);
   prt_char_info(enem);
@@ -219,8 +211,8 @@ int main() {
   player *protag, *enem;
   protag = arena_alloc(&game_arena, sizeof(player));
   enem = arena_alloc(&game_arena, sizeof(player));
-  proc_char(protag, "protag");    
-  proc_char(enem, "enem");
+  proc_rand_char(protag, "protag");    
+  proc_rand_char(enem, "enem");
   
   GAME_STATE state = RUNNING;
   while(state == RUNNING) { 
@@ -232,6 +224,7 @@ int main() {
       attack(enem, protag);
     }
 
+    // wrap this in a state machine handling battle/game progress
     if(protag->charstats.HP <= 0) {
       state = LOSE;
       printf("player has DIED!\n");
@@ -247,5 +240,4 @@ int main() {
 
   arena_free(&game_arena);
   printf("exiting game\n");
-  return 0;
 }

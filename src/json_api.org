@@ -3,14 +3,14 @@
 - link to repo :: https://github.com/sheredom/json.h
 
 #+BEGIN_SRC C
-struct json_value_s json_parse(
-  const void *src
-)
+  struct json_value_s json_parse(
+    const void *src
+  )
 
-struct json_value_s {
-void * payload;
-size_t type;
-}
+  struct json_value_s {
+  void * payload;
+  size_t type;
+  }
 #+END_SRC
 
 * extended parse

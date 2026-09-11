@@ -1,5 +1,5 @@
-#ifndef HELPFUL_H
-#define HELPFUL_H
+#ifndef DECLARES_H
+#define DECLARES_H
 
 #include <stdint.h>
 #include <stddef.h>

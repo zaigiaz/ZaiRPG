@@ -9,9 +9,7 @@
 #include "data.h"
 #include "declares.h"
 
-#define TEST_GAME 1
-#define MAX_MOVES 5
-#define MAX_TYPE_COUNT 5
+#define TEST_GAME 0
 
 // TODO :: Make basic inventory system
 
@@ -23,10 +21,10 @@ typedef enum : u8 {
   MOVE_STORM,
   MOVE_EARTH,
   MOVE_WHITE,
-  MOVE_BLACK
+  MOVE_BLACK,
+  MAX_TYPE
 } move_type;
 
-// enum to specify type of class (for tagged union on class)
 typedef enum : u8 {
   KNIGHT,
   ARCHER,
@@ -35,12 +33,12 @@ typedef enum : u8 {
 
 // first element is elem being affected by second element
 const f32 type_interaction_table[6][6] = {
-  [MOVE_PHYSICAL] = {0.0f, 2.0f, 1.5f, 1.0f, 1.5f, 1.0f},
-  [MOVE_FLAME]    = {3.0f, 0.0f, 2.0f, 1.5f, 1.1f, 1.0f},
-  [MOVE_STORM]    = {1.0f, 1.0f, 0.0f, 1.0f, 1.4f, 1.5f},
-  [MOVE_EARTH]    = {1.0f, 1.8f, 1.0f, 0.0f, 1.2f, 1.0f},
-  [MOVE_WHITE]    = {2.0f, 1.0f, 2.0f, 1.0f, 0.0f, 1.5f},
-  [MOVE_BLACK]    = {1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 0.0f}
+  [MOVE_PHYSICAL] = {1.0f, 2.0f, 1.5f, 1.0f, 1.5f, 1.0f},
+  [MOVE_FLAME]    = {3.0f, 1.0f, 2.0f, 1.5f, 1.1f, 1.0f},
+  [MOVE_STORM]    = {1.0f, 1.0f, 1.0f, 1.0f, 1.4f, 1.5f},
+  [MOVE_EARTH]    = {1.0f, 1.8f, 1.0f, 1.0f, 1.2f, 1.0f},
+  [MOVE_WHITE]    = {2.0f, 1.0f, 2.0f, 1.0f, 1.0f, 1.5f},
+  [MOVE_BLACK]    = {1.0f, 2.0f, 1.0f, 1.0f, 1.0f, 1.0f}
 };
 
 const char* mv_type_to_string(move_type type) {
@@ -62,8 +60,8 @@ typedef struct {
   move_type type;
   u64 damage;
   u8 range;
-  u16 * effects_target; // list of things effected by ID
-  // add effect type
+  u16 * effects_targets; 
+  // TODO :: add effect type
 } Move;
 
 typedef struct {
@@ -80,12 +78,11 @@ typedef struct {
   const char *name;  
   move_type player_type;
   stats charstats;
-  Move moves[MAX_MOVES];
+  Move moves[6];
   u8 current_moves;
-} player;
+} player_ent;
 
-// print the player information
-void prt_char_info(const player* sheet) {
+void prt_char_info(const player_ent* sheet) {
   printf("==============================\n");
   printf("entity name is: '%s'\n", sheet->name);
   printf("Player Type: %s\n", mv_type_to_string(sheet->player_type));
@@ -102,10 +99,9 @@ void prt_char_info(const player* sheet) {
   printf("==============================\n");
 }
 
-// generate random character
-void proc_rand_char(player* sheet, char* ent_name) {
+void proc_rand_char(player_ent* sheet, char* ent_name) {
   sheet->name = ent_name;  
-  sheet->player_type = GetRandomValue(0, MAX_TYPE_COUNT);
+  sheet->player_type = GetRandomValue(0, MAX_TYPE-1);
   u32 rand[6];
 
   for(u8 i=0; i<countof(rand); i++) {
@@ -120,36 +116,31 @@ void proc_rand_char(player* sheet, char* ent_name) {
   sheet->current_moves = 2;
 }
 
-// choose attack (random for now)
 u8 choose_attack(u8 current_moves) {
   u8 att_move = GetRandomValue(1, current_moves-1);
   return att_move;
 }
 
-// function to get two entities to interact through move system
-void attack(player* ent, const player* enem) {
+void attack(player_ent* ent, const player_ent* enem) {
   u8 index = choose_attack(enem->current_moves);
   Move Chosen = enem->moves[index];
   f32 modifier = type_interaction_table[ent->player_type][Chosen.type];
   u32 damage = (Chosen.damage * modifier);
   ent->charstats.HP -= damage;
-  printf("%s was attacked by %s for %d damage\n", ent->name, Chosen.name, damage);
+  printf("%s was attacked by %s with %s for %d damage\n", ent->name, enem->name, Chosen.name, damage);
 }
 
-// calculate the player speed
-i32 calc_speed(const player* ent) {
+i32 calc_speed(const player_ent* ent) {
   return (i32) (ent->charstats.Endurance * 2.5);
 }
 
-// numerical representation of total char power
-i32 calc_power(const player* ent) {
+i32 calc_power(const player_ent* ent) {
   i32 base = (ent->charstats.HP + ent-> charstats.MP + ent->charstats.AP);
   f32 modifiers = (ent->charstats.Strength + ent->charstats.Intelligence + ent->charstats.Endurance);
   return (i32) (base * modifiers);
 }
 
-// Calculate turn action and who can go first
-bool calc_turn_action(const player* ent, const player* opp) {
+bool calc_turn_action(const player_ent* ent, const player_ent* opp) {
   if(calc_speed(ent) > calc_speed(opp)) {
     return true;
   }
@@ -159,7 +150,7 @@ bool calc_turn_action(const player* ent, const player* opp) {
 void test_window() {
   InitWindow(1200, 1200, "ZaiRPG");
   SetTargetFPS(60);
-  while (!WindowShouldClose())    // Detect window close button or ESC key
+  while (!WindowShouldClose())
     {
       BeginDrawing();
       ClearBackground(RAYWHITE);
@@ -170,9 +161,9 @@ void test_window() {
 }
 
 void test_game() {
-  player *protag, *enem;
-  protag = malloc(sizeof(player));
-  enem = malloc(sizeof(player));
+  player_ent *protag, *enem;
+  protag = malloc(sizeof(player_ent));
+  enem = malloc(sizeof(player_ent));
 
   proc_rand_char(protag, "protag");
   proc_rand_char(enem, "enem");
@@ -208,9 +199,9 @@ int main() {
     exit(0);
   }
 
-  player *protag, *enem;
-  protag = arena_alloc(&game_arena, sizeof(player));
-  enem = arena_alloc(&game_arena, sizeof(player));
+  player_ent *protag, *enem;
+  protag = arena_alloc(&game_arena, sizeof(player_ent));
+  enem = arena_alloc(&game_arena, sizeof(player_ent));
   proc_rand_char(protag, "protag");    
   proc_rand_char(enem, "enem");
   
@@ -220,11 +211,13 @@ int main() {
     u8 turn_action = calc_turn_action(protag,enem);
     if(!turn_action) {
       attack(protag, enem);    
+      attack(enem, protag);
     } else {
       attack(enem, protag);
+      attack(protag, enem);    
     }
 
-    // wrap this in a state machine handling battle/game progress
+    // TODO :: wrap this in a state machine handling battle/game progress
     if(protag->charstats.HP <= 0) {
       state = LOSE;
       printf("player has DIED!\n");

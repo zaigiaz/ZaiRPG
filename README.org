@@ -2,21 +2,14 @@
 
 Tactical RPG written in C. Inspired by CDDA and Nethack.
 
-* Classes and Types
-
-I want to do something unique for this. Blue or Black Mage, etc.
-Inspired by D&D and older fantasy titles.
-
 ** Future Plans
 
-- Character stats and sheets procgen
 - AP, Types, Weaknesses (inspired by Pokemon and other games)
 - Main Game Loop or basic test battle for now
 - work on game mechanics
 - ASCII viewer with turn-based combat, Z-levels, cover, etc.
+- basic overworld and battle with raylib
 
-** Resources
 
-- https://github.com/LuanFabricio/isometric-raylib/blob/main/main.c
 
 

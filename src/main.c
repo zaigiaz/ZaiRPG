@@ -9,7 +9,7 @@
 #include "data.h"
 #include "declares.h"
 
-#define TEST_GAME 0
+#define TEST_GAME 1
 
 // TODO :: Make basic inventory system
 
@@ -177,8 +177,10 @@ void test_game() {
     attack(protag, enem);    
   }
 
-  /* s8* st = slurp("../TODO_LONG"); */
-  /* printf("\n%s\n", st->data); */
+  s8* json_test = slurp("test.json");
+  printf("%s", json_test->data);
+  parse_json_move(json_test);
+  
   /* test_window(); */
 
   free(protag);

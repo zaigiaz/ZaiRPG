@@ -2,34 +2,18 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
-#include "raylib.h"
 
 #define ARENA_IMPLEMENTATION
-#include "arena.h"
+#include "includes/arena.h"
+
+#include "raylib.h"
+#include "primary.h"
 #include "data.h"
 #include "declares.h"
 
 #define TEST_GAME 1
 
 // TODO :: Make basic inventory system
-
-typedef enum : u8 { WIN, RUNNING, LOSE, ERROR } GAME_STATE;
-
-typedef enum : u8 {
-  MOVE_PHYSICAL,
-  MOVE_FLAME,
-  MOVE_STORM,
-  MOVE_EARTH,
-  MOVE_WHITE,
-  MOVE_BLACK,
-  MAX_TYPE
-} move_type;
-
-typedef enum : u8 {
-  KNIGHT,
-  ARCHER,
-  MAGE
-} class_type;
 
 // first element is elem being affected by second element
 const f32 type_interaction_table[6][6] = {
@@ -54,33 +38,6 @@ const char* mv_type_to_string(move_type type) {
   }
   return mv_name;
 }
-
-typedef struct {
-  char *name;
-  move_type type;
-  u64 damage;
-  u8 range;
-  u16 * effects_targets; 
-  // TODO :: add effect type
-} Move;
-
-typedef struct {
-  i32 HP;
-  i32 AP;
-  i32 MP;
-  
-  u32 Strength;
-  u32 Intelligence;
-  u32 Endurance;
-} stats;
-
-typedef struct {
-  const char *name;  
-  move_type player_type;
-  stats charstats;
-  Move moves[6];
-  u8 current_moves;
-} player_ent;
 
 void prt_char_info(const player_ent* sheet) {
   printf("==============================\n");
@@ -142,9 +99,9 @@ i32 calc_power(const player_ent* ent) {
 
 bool calc_turn_action(const player_ent* ent, const player_ent* opp) {
   if(calc_speed(ent) > calc_speed(opp)) {
-    return true;
+    return 1;
   }
-  return false;
+  return 0;
 }
 
 void test_window() {

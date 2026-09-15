@@ -1,6 +1,7 @@
 {
     "items": [
-	{ "Name": "AnotherTEST" },   
-	{ "Name": "AnotherTEST" }
+	{ "name": "Fireshot", "Move_Type": "MOVE_FLAME", "damage": 25 },   
+	{ "name": "Rock Throw", "Move_Type": "MOVE_EARTH", "damage": 15 },   
+	{ "name": "Shadow Wave", "Move_Type": "MOVE_BLACK", "damage": 10 }
     ]
 }

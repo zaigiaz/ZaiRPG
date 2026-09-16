@@ -135,7 +135,6 @@ void test_game() {
   }
 
   s8* json_test = slurp("test.json");
-  printf("%s", json_test->data);
   parse_json_move(json_test);
   
   /* test_window(); */

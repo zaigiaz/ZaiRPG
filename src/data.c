@@ -93,7 +93,6 @@ void parse_json_move(const s8* json) {
         printf("Move: %s, Type: %s, Damage: %d\n",
                move_name, move_type, damage);
     }
-    printf("\nThe length of the root object is %zu\n", object->length);
     free(root);
 }
 

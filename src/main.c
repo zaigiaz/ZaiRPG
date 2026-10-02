@@ -56,6 +56,13 @@ void prt_char_info(const player_ent* sheet) {
   printf("==============================\n");
 }
 
+// TODO :: initialize by taking all the values
+player_ent proc_char(char* name, stats init_stats) {
+  player_ent return_values = {0};
+
+  return return_values;
+}
+
 void proc_rand_char(player_ent* sheet, char* ent_name) {
   sheet->name = ent_name;  
   sheet->player_type = GetRandomValue(0, MAX_TYPE-1);
